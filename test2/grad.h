@@ -1,5 +1,27 @@
 #pragma once
 
+#include<bits/stdc++.h>
+#include "./Eigen3/Dense"
+#include <random>
+
+#define Vec std::vector
+#define Pair std::pair
+#define RNG std::default_random_engine
+#define UniqPtr std::unique_ptr
+
+/// The meta-data of composite feature
+struct CpFeatureMeta {
+  /// The value cap of each categorical attribute
+  Vec<int> enum_cap;
+  /// The total number of numerical attribute
+  int num_size;
+};
+
+struct CpFeature {
+  Vec<int> enum_;
+  Vec<double> num_;
+};
+
 struct Grad {
   double left, right;
 };
