@@ -130,10 +130,10 @@ public:
                 ans(i, 0) = x(i, 0);
         else if(type == "sigmod")
             for(int i = 0; i < x.rows(); i++)         
-                    ans(i, 0) = sigmod(x(i, 0));
+               ans(i, 0) = sigmod(x(i, 0));
         else if(type == "tanh")
             for(int i = 0; i < x.rows(); i++)         
-                    ans(i, 0) = tanh(x(i, 0));
+                ans(i, 0) = tanh(x(i, 0));
         else if(type == "ReLU")
             for(int i = 0; i < x.rows(); i++)
                     ans(i, 0) = Relu(x(i, 0));
@@ -151,10 +151,10 @@ public:
                 ans(i, 0) = 1;
         else if(type == "sigmod")
             for(int i = 0; i < x.rows(); i++)
-                    ans(i, 0) = sigmod(x(i, 0)) * (1 - sigmod(x(i, 0)));
+                    ans(i, 0) = x(i, 0) * (1 - x(i, 0));
         else if(type == "tanh")
             for(int i = 0; i < x.rows(); i++)
-                    ans(i, 0) = 1 - tanh(x(i, 0)) * tanh(x(i, 0));
+                    ans(i, 0) = 1 - x(i, 0) * x(i, 0);
         else if(type == "Relu")
             for(int i = 0; i < x.rows(); i++)
                     ans(i, 0) = (x(i, 0) > 0) ? 1 : 0;
@@ -163,7 +163,7 @@ public:
                     ans(i, 0) = (x(i, 0) > 0) ? 1 : 0.25;
         else if(type == "ELU")
             for(int i = 0; i < x.rows(); i++)
-                    ans(i, 0) = (x(i, 0) > 0) ? 1 : 0.25 * exp(x(i, 0));
+                    ans(i, 0) = (x(i, 0) > 0) ? 1 : x(i, 0) + 0.25;
     }
 
     static UniqPtr<ForwordBaseNetwork> Construct(const CpFeatureMeta& meta, double scale) noexcept {

@@ -27,12 +27,12 @@ void solve(int type, string active)
     FILE *fin = fopen(s1[type], "w");
     //产生测试集
 
-  for (int epoch = 0; epoch < 5000; epoch++)
+  for (int epoch = 0; epoch < 50000; epoch++)
   {
       for (int i = 0; i < 200; ++i)
       {
           Vec<Pair<CpFeature, Grad>> batch;
-          for (int j = 0; j < 20; ++j) {
+          for (int j = 0; j < 1; ++j) {
             int a = dist(gen), b = dist(gen), c = dist(gen);
             double d = dist2(gen), e = dist2(gen), f = dist2(gen); //+ noise(gen);
             double score = (a == 0) ? d : e;
