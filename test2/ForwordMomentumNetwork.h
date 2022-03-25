@@ -15,12 +15,15 @@ public:
         Vec<Eigen::MatrixXd> weights_;
         Vec<Eigen::MatrixXd> momentum_;
         Vec<Eigen::VectorXd> bias_;
+        Vec<Eigen::MatrixXd> momentum_tmp;
+        Vec<Eigen::VectorXd> bias_tmp;
         Vec<Eigen::VectorXd> delta_error_;
         double init_scale;
         std::string activation_function;
         double learning_rate;
         const double reg_coeff = 0.1;
         const double loss_rate = 0.9;
+        int mini_batch_size;
 
     ForwordMomentumNetwork(const CpFeatureMeta& meta,  Vec<int> idx_offset, Vec<int> layer_neuron_num,  double scale) : 
       enum_size_(static_cast<int>(meta.enum_cap.size())),
@@ -46,6 +49,14 @@ public:
             weights_[i] = Eigen::MatrixXd(layer_[i+1].rows(), layer_[i].rows());
             momentum_[i] = Eigen::MatrixXd(layer_[i+1].rows(), layer_[i].rows());
             bias_[i] = Eigen::VectorXd(layer_[i+1].rows());
+        }
+
+        //generate tmp_momentum matrix and bias vector
+        momentum_tmp.resize(layer_num_ - 1);
+        bias_tmp.resize(layer_num_ - 1);
+        for(int i = 0; i < layer_num_ - 1; i++) {
+            momentum_tmp[i] = Eigen::MatrixXd(layer_[i+1].rows(), layer_[i].rows());
+            bias_tmp[i] = Eigen::VectorXd(layer_[i+1].rows());
         }
     }
 
@@ -84,17 +95,42 @@ public:
         }
 
         for(int i = 0; i < weights_.size(); i++) {
-            momentum_[i] = loss_rate * momentum_[i] + learning_rate * (delta_error_[i] * layer_[i].transpose());
-            weights_[i] =  weights_[i] * (1 - reg_coeff * learning_rate * 2) - momentum_[i]; 
-            bias_[i] = bias_[i] - learning_rate * delta_error_[i];
+            momentum_tmp[i] +=  learning_rate * (delta_error_[i] * layer_[i].transpose());
+            bias_tmp[i] += learning_rate * delta_error_[i];
+            // momentum_[i] = loss_rate * momentum_[i] + learning_rate * (delta_error_[i] * layer_[i].transpose());
+            // weights_[i] =  weights_[i] * (1 - reg_coeff * learning_rate * 2) - momentum_[i]; 
+            // bias_[i] = bias_[i] - learning_rate * delta_error_[i];
         }
     }
 
     void FitMiniBatch(const Vec<Pair<CpFeature, Grad>>& grad) {
-        double output_error = 0;
-        for(int i = 0; i < grad.size(); i++)
-            output_error = grad[i].second.left;
-        backward(output_error / grad.size());        
+        // double output_error = 0;
+        // for(int i = 0; i < grad.size(); i++)
+        //     output_error = grad[i].second.left;
+        // backward(output_error / grad.size());  
+
+        //initialize tmp_momentum matrix
+        for(int i = 0; i  < weights_.size(); i++)
+            for(int j = 0; j < weights_[i].rows(); j++)
+                for(int k = 0; k < weights_[i].cols(); k++)
+                    momentum_tmp[i](j, k) = 0;
+
+        //initialize tmp_bias vector
+        for(int i = 0; i < bias_.size(); i++)
+            for(int j = 0; j < bias_[i].rows(); j++)
+                bias_tmp[i](j ,0) = 0;
+
+        int batch_num = grad.size();
+        for(int i = 0; i < batch_num; i++) {
+            EvalScore(grad[i].first);
+            backward(grad[i].second.left);
+        }
+
+        for(int i = 0; i  < weights_.size(); i++) {
+            momentum_[i] = loss_rate * momentum_[i] + (1.0 / batch_num) * momentum_tmp[i]; 
+            weights_[i] = weights_[i] * (1 - reg_coeff * learning_rate * 2) - momentum_[i];
+            bias_[i] = bias_[i] - (1.0 / batch_num) * bias_tmp[i];
+        }
     } 
 
     double EvalScore(const CpFeature& feature)   {

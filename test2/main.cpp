@@ -13,10 +13,10 @@ const char *s2[6] = {"momentum_data_none.txt", "momentum_data_sigmod.txt",
 void solve(int type, string active)
 { 
     CpFeatureMeta meta{ Vec<int>{2}, 2 };
-    auto model = ForwordBaseNetwork::Construct(meta, 1);
+    auto model = ForwordMomentumNetwork::Construct(meta, 1);
     model->activation_function = active;
     
-    cout << "ForwordBaseNetwork:  " << active << endl;
+    cout << "ForwordMomentumNetwork:  " << active << endl;
 
     std::default_random_engine gen(910109);
     std::uniform_int_distribution<int> dist(0, 1);
@@ -24,15 +24,15 @@ void solve(int type, string active)
     std::uniform_real_distribution<double> dist2(-10, 10);
     std::normal_distribution<double> noise(0, 1);
     model->Reset(gen);
-    FILE *fin = fopen(s1[type], "w");
+    FILE *fin = fopen(s2[type], "w");
     //产生测试集
 
-  for (int epoch = 0; epoch < 50000; epoch++)
+  for (int epoch = 0; epoch < 5000; epoch++)
   {
-      for (int i = 0; i < 200; ++i)
+      for (int i = 0; i < 20; ++i)
       {
           Vec<Pair<CpFeature, Grad>> batch;
-          for (int j = 0; j < 1; ++j) {
+          for (int j = 0; j < 20; ++j) {
             int a = dist(gen), b = dist(gen), c = dist(gen);
             double d = dist2(gen), e = dist2(gen), f = dist2(gen); //+ noise(gen);
             double score = (a == 0) ? d : e;
@@ -86,3 +86,23 @@ int main()
    for(int i = 0; i < 6; i++)
         solve(i, active[i]);
 }
+
+// int main()
+// {
+//     Eigen::MatrixXd tmp = Eigen::MatrixXd(2, 2);
+//     for(int i = 0; i < 2; i++)
+//     {
+//       for(int j = 0; j < 2; j++)
+//         printf("%d ", tmp(i, j));
+//       putchar('\n');
+//     }
+
+//     tmp = 1.0 / 2 * tmp;
+
+//     for(int i = 0; i < 2; i++)
+//     {
+//       for(int j = 0; j < 2; j++)
+//         printf("%d ", tmp(i, j));
+//       putchar('\n');
+//     }
+// }
